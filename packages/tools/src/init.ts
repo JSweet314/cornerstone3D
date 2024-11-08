@@ -25,15 +25,18 @@ let csToolsInitialized = false;
  * @param defaultConfiguration - A configuration object that will be used to
  * initialize the tool.
  */
-export function init(defaultConfiguration = {}): void {
-  if (csToolsInitialized) {
-    return;
-  }
+export function init(defaultConfiguration = {}): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    if (csToolsInitialized) {
+      return resolve();
+    }
 
-  _addCornerstoneEventListeners();
-  _addCornerstoneToolsEventListeners();
+    _addCornerstoneEventListeners();
+    _addCornerstoneToolsEventListeners();
 
-  csToolsInitialized = true;
+    csToolsInitialized = true;
+    return resolve();
+  });
 }
 
 /**

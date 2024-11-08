@@ -96,39 +96,41 @@ function isIOS() {
  * @returns A promise that resolves to true if cornerstone has been initialized successfully.
  * @category Initialization
  */
-function init(configuration = config): boolean {
-  if (csRenderInitialized) {
-    return csRenderInitialized;
-  }
-
-  // merge configs
-  config = deepMerge(defaultConfig, configuration);
-
-  if (isIOS()) {
-    if (configuration.rendering?.preferSizeOverAccuracy) {
-      config.rendering.preferSizeOverAccuracy = true;
-    } else {
-      console.log(
-        'norm16 texture not supported, you can turn on the preferSizeOverAccuracy flag to use native data type, but be aware of the inaccuracy of the rendering in high bits'
-      );
+function init(configuration = config): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (csRenderInitialized) {
+      return resolve(csRenderInitialized);
     }
-  }
 
-  const hasWebGLContext = _hasActiveWebGLContext();
-  if (!hasWebGLContext) {
-    console.log('CornerstoneRender: GPU not detected, using CPU rendering');
-    config.rendering.useCPURendering = true;
-  } else {
-    console.log('CornerstoneRender: using GPU rendering');
-  }
+    // merge configs
+    config = deepMerge(defaultConfig, configuration);
 
-  csRenderInitialized = true;
+    if (isIOS()) {
+      if (configuration.rendering?.preferSizeOverAccuracy) {
+        config.rendering.preferSizeOverAccuracy = true;
+      } else {
+        console.log(
+          'norm16 texture not supported, you can turn on the preferSizeOverAccuracy flag to use native data type, but be aware of the inaccuracy of the rendering in high bits'
+        );
+      }
+    }
 
-  if (!webWorkerManager) {
-    webWorkerManager = new CentralizedWebWorkerManager();
-  }
+    const hasWebGLContext = _hasActiveWebGLContext();
+    if (!hasWebGLContext) {
+      console.log('CornerstoneRender: GPU not detected, using CPU rendering');
+      config.rendering.useCPURendering = true;
+    } else {
+      console.log('CornerstoneRender: using GPU rendering');
+    }
 
-  return csRenderInitialized;
+    csRenderInitialized = true;
+
+    if (!webWorkerManager) {
+      webWorkerManager = new CentralizedWebWorkerManager();
+    }
+
+    return resolve(csRenderInitialized);
+  });
 }
 
 /**
